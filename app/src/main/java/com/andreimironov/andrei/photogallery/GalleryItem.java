@@ -1,9 +1,11 @@
 package com.andreimironov.andrei.photogallery;
 
+import com.google.gson.annotations.SerializedName;
+
 public class GalleryItem {
-    private String mCaption;
-    private String mId;
-    private String mUrl;
+    @SerializedName("id") private String mId;
+    @SerializedName("title") private String mCaption;
+    @SerializedName("url_s") private String mUrl;
 
     public String getCaption() {
         return mCaption;
