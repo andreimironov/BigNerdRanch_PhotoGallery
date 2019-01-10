@@ -1,5 +1,6 @@
 package com.andreimironov.andrei.photogallery;
 
+import android.net.TrafficStats;
 import android.net.Uri;
 import android.util.Log;
 
@@ -20,9 +21,11 @@ import java.util.List;
 
 public class FlickrFetchr {
     private static final String TAG = "FlickrFetchr";
+    private static final int THREAD_ID = 10000;
     private static final String API_KEY = "f88227063a6877dea7b9d91d6f914b4f";
 
     public byte[] getUrlBytes(String urlSpec) throws IOException {
+        TrafficStats.setThreadStatsTag(THREAD_ID);
         URL url = new URL(urlSpec);
         HttpURLConnection connection = (HttpURLConnection)url.openConnection();
         try {
@@ -39,6 +42,7 @@ public class FlickrFetchr {
             while ((bytesRead = in.read(buffer)) > 0) {
                 out.write(buffer, 0, bytesRead);
             }
+            in.close();
             out.close();
             return out.toByteArray();
         } finally {

@@ -145,7 +145,7 @@ public class PhotoGalleryFragment extends Fragment {
         }
 
         public void bindGalleryItem(GalleryItem item) {
-            bindWithPicasso(item);
+            bindWithoutPicasso(item);
         }
 
         private void bindWithoutPicasso(GalleryItem item) {
