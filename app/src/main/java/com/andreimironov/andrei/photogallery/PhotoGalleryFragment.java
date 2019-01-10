@@ -20,6 +20,7 @@ public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
+    private int mLastPage = 0;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -37,13 +38,31 @@ public class PhotoGalleryFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         mPhotoRecyclerView = view.findViewById(R.id.photo_recycler_view);
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (!mPhotoRecyclerView.canScrollVertically(1)) {
+                    new FetchItemsTask().execute();
+                }
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        });
         setupAdapter();
         return view;
     }
 
     private void setupAdapter() {
         if (isAdded()) {
-            mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
+            if (mPhotoRecyclerView.getAdapter() == null) {
+                mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
+            } else {
+                mPhotoRecyclerView.getAdapter().notifyDataSetChanged();
+            }
         }
     }
 
@@ -90,12 +109,13 @@ public class PhotoGalleryFragment extends Fragment {
     private class FetchItemsTask extends AsyncTask<Void,Void,List<GalleryItem>> {
         @Override
         protected List<GalleryItem> doInBackground(Void... params) {
-            return new FlickrFetchr().fetchItems();
+            mLastPage++;
+            return new FlickrFetchr().fetchItems(mLastPage);
         }
 
         @Override
         protected void onPostExecute(List<GalleryItem> galleryItems) {
-            mItems = galleryItems;
+            mItems.addAll(galleryItems);
             setupAdapter();
         }
     }
