@@ -11,6 +11,9 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import androidx.annotation.NonNull;
+import androidx.collection.LruCache;
+
 public class ThumbnailDownloader<T> extends HandlerThread {
     private static final String TAG = "ThumbnailDownloader";
     private static final int MESSAGE_DOWNLOAD = 0;
@@ -19,6 +22,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     private Handler mResponseHandler;
     private ThumbnailDownloadListener<T> mThumbnailDownloadListener;
     private ConcurrentMap<T,String> mRequestMap = new ConcurrentHashMap<>();
+    private LruCache<String, Bitmap> mLruCache;
 
     public interface ThumbnailDownloadListener<T> {
         void onThumbnailDownloaded(T target, Bitmap thumbnail);
@@ -31,6 +35,14 @@ public class ThumbnailDownloader<T> extends HandlerThread {
     public ThumbnailDownloader(Handler responseHandler) {
         super(TAG);
         mResponseHandler = responseHandler;
+        int maxMemory = (int) (Runtime.getRuntime().maxMemory() / 1024);
+        int cacheSize = maxMemory / 8;
+        mLruCache = new LruCache<String, Bitmap>(cacheSize) {
+            @Override
+            protected int sizeOf(@NonNull String key, @NonNull Bitmap value) {
+                return value.getAllocationByteCount() / 1024;
+            }
+        };
     }
 
     @Override
@@ -59,11 +71,13 @@ public class ThumbnailDownloader<T> extends HandlerThread {
             if (url == null) {
                 return;
             }
-            byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
-            final Bitmap bitmap = BitmapFactory
-                    .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
-            Log.i(TAG, "Bitmap created");
-
+            if (mLruCache.get(url) == null) {
+                byte[] bitmapBytes = new FlickrFetchr().getUrlBytes(url);
+                final Bitmap bitmap = BitmapFactory
+                        .decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+                mLruCache.put(url, bitmap);
+                Log.i(TAG, "Bitmap created");
+            }
             mResponseHandler.post(new Runnable() {
                 @Override
                 public void run() {
@@ -71,7 +85,7 @@ public class ThumbnailDownloader<T> extends HandlerThread {
                         return;
                     }
                     mRequestMap.remove(target);
-                    mThumbnailDownloadListener.onThumbnailDownloaded(target, bitmap);
+                    mThumbnailDownloadListener.onThumbnailDownloaded(target, mLruCache.get(url));
                 }
             });
         } catch (IOException ioe) {

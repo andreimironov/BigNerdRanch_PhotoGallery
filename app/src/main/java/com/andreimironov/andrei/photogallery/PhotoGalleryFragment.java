@@ -26,6 +26,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
+    private static final int COLUMN_WIDTH = 400;
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
     private int mLastPage = 0;
@@ -59,15 +60,16 @@ public class PhotoGalleryFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         mPhotoRecyclerView = view.findViewById(R.id.photo_recycler_view);
-        mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                int columnWidth = 300;
-                int width = mPhotoRecyclerView.getWidth();
-                int spanCount = width < columnWidth ? 1 : width / columnWidth;
-                mPhotoRecyclerView.setLayoutManager(
-                        new GridLayoutManager(getActivity(), spanCount));
-                mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
+                new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        int width = mPhotoRecyclerView.getWidth();
+                        int spanCount = width < COLUMN_WIDTH ? 1 : width / COLUMN_WIDTH;
+                        mPhotoRecyclerView
+                                .setLayoutManager(new GridLayoutManager(getActivity(), spanCount));
+                        mPhotoRecyclerView
+                                .getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
         });
         mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
