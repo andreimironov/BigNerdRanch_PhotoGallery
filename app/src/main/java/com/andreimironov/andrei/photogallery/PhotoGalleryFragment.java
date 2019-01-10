@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -37,7 +38,17 @@ public class PhotoGalleryFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         mPhotoRecyclerView = view.findViewById(R.id.photo_recycler_view);
-        mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                int columnWidth = 300;
+                int width = mPhotoRecyclerView.getWidth();
+                int spanCount = width < columnWidth ? 1 : width / columnWidth;
+                mPhotoRecyclerView.setLayoutManager(
+                        new GridLayoutManager(getActivity(), spanCount));
+                mPhotoRecyclerView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+        });
         mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -97,10 +108,12 @@ public class PhotoGalleryFragment extends Fragment {
 
     private class PhotoHolder extends RecyclerView.ViewHolder {
         private TextView mTitleTextView;
+
         public PhotoHolder(View itemView) {
             super(itemView);
             mTitleTextView = (TextView) itemView;
         }
+
         public void bindGalleryItem(GalleryItem item) {
             mTitleTextView.setText(item.toString());
         }
