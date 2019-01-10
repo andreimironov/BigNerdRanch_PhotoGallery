@@ -13,6 +13,8 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageView;
 
+import com.squareup.picasso.Picasso;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -125,9 +127,7 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public void onBindViewHolder(PhotoHolder photoHolder, int position) {
             GalleryItem galleryItem = mGalleryItems.get(position);
-            Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
-            photoHolder.bindDrawable(placeholder);
-            mThumbnailDownloader.queueThumbnail(photoHolder, galleryItem.getUrl());
+            photoHolder.bindGalleryItem(galleryItem);
         }
 
         @Override
@@ -142,6 +142,24 @@ public class PhotoGalleryFragment extends Fragment {
         public PhotoHolder(View itemView) {
             super(itemView);
             mItemImageView = itemView.findViewById(R.id.image_view);
+        }
+
+        public void bindGalleryItem(GalleryItem item) {
+            bindWithPicasso(item);
+        }
+
+        private void bindWithoutPicasso(GalleryItem item) {
+            Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
+            bindDrawable(placeholder);
+            mThumbnailDownloader.queueThumbnail(this, item.getUrl());
+        }
+
+        private void bindWithPicasso(GalleryItem item) {
+            Picasso
+                    .get()
+                    .load(item.getUrl())
+                    .placeholder(R.drawable.bill_up_close)
+                    .into(mItemImageView);
         }
 
         public void bindDrawable(Drawable drawable) {
