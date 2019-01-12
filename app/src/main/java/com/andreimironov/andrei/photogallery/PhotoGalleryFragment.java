@@ -27,7 +27,9 @@ import androidx.recyclerview.widget.RecyclerView;
 public class PhotoGalleryFragment extends Fragment {
     private static final String TAG = "PhotoGalleryFragment";
     private static final int COLUMN_WIDTH = 400;
+    private static final int PRELOADED_ITEMS_SIZE = 10;
     private RecyclerView mPhotoRecyclerView;
+    private GridLayoutManager mLayoutManager;
     private List<GalleryItem> mItems = new ArrayList<>();
     private int mLastPage = 0;
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
@@ -66,8 +68,9 @@ public class PhotoGalleryFragment extends Fragment {
                     public void onGlobalLayout() {
                         int width = mPhotoRecyclerView.getWidth();
                         int spanCount = width < COLUMN_WIDTH ? 1 : width / COLUMN_WIDTH;
+                        mLayoutManager = new GridLayoutManager(getActivity(), spanCount);
                         mPhotoRecyclerView
-                                .setLayoutManager(new GridLayoutManager(getActivity(), spanCount));
+                                .setLayoutManager(mLayoutManager);
                         mPhotoRecyclerView
                                 .getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }
@@ -78,6 +81,13 @@ public class PhotoGalleryFragment extends Fragment {
                 super.onScrollStateChanged(recyclerView, newState);
                 if (!mPhotoRecyclerView.canScrollVertically(1)) {
                     new FetchItemsTask().execute();
+                }
+                int firstPosition = mLayoutManager.findFirstVisibleItemPosition();
+                int lastPosition = mLayoutManager.findLastVisibleItemPosition();
+                int start = Math.max(firstPosition - PRELOADED_ITEMS_SIZE, 0);
+                int end = Math.min(lastPosition + PRELOADED_ITEMS_SIZE, mItems.size() - 1);
+                for (int position = start; position <= end; position++) {
+                    mThumbnailDownloader.queueThumbnailCache(mItems.get(position).getUrl());
                 }
             }
         });
