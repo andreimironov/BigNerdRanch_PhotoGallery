@@ -25,6 +25,7 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -39,6 +40,7 @@ public class PhotoGalleryFragment extends Fragment {
     private List<GalleryItem> mItems = new ArrayList<>();
     private ThumbnailDownloader<PhotoHolder> mThumbnailDownloader;
     private int mLastPage;
+    private AlertDialog mProgressDialog;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -59,6 +61,10 @@ public class PhotoGalleryFragment extends Fragment {
         mThumbnailDownloader.start();
         mThumbnailDownloader.getLooper();
         Log.i(TAG, "Background thread started");
+        mProgressDialog = new AlertDialog
+                .Builder(getContext())
+                .setView(R.layout.progress_dialog_view)
+                .create();
     }
 
     @Override
@@ -77,6 +83,7 @@ public class PhotoGalleryFragment extends Fragment {
                         .getSystemService(Activity.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
                 searchView.onActionViewCollapsed();
+                mProgressDialog.show();
                 return true;
             }
 
@@ -257,6 +264,7 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         protected void onPostExecute(List<GalleryItem> galleryItems) {
             mItems.addAll(galleryItems);
+            mProgressDialog.dismiss();
             updateAdapter();
         }
     }
