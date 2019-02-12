@@ -28,6 +28,7 @@ public class PollService extends IntentService {
     private static final long POLL_INTERVAL_MS = MINUTES.toMillis(1);
 
     public static void setServiceAlarm(Context context, boolean isOn) {
+        Log.d(TAG, "setServiceAlarm(" + isOn + ")");
         Intent intent = PollService.newIntent(context);
         PendingIntent pendingIntent =
                 PendingIntent.getService(context, 0, intent, 0);
@@ -45,6 +46,7 @@ public class PollService extends IntentService {
     }
 
     public static boolean isServiceAlarmOn(Context context) {
+        Log.d(TAG, "isServiceAlarmOn");
         Intent intent = PollService.newIntent(context);
         PendingIntent pendingIntent =
                 PendingIntent.getService(context, 0, intent, PendingIntent.FLAG_NO_CREATE);
@@ -61,10 +63,14 @@ public class PollService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
         if (!isNetworkAvailableAndConnected()) {
             return;
         }
-        Log.i(TAG, "Received an intent: " + intent);
+        Log.d(TAG, "Received an intent: " + intent);
         String query = QueryPreferences.getStoredQuery(this);
         String lastResultId = QueryPreferences.getLastResultId(this);
         List<GalleryItem> items;

@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -104,7 +105,10 @@ public class PhotoGalleryFragment extends Fragment {
             }
         });
         MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
-        if (PollService.isServiceAlarmOn(getActivity())) {
+        boolean isServiceAlarmOn = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
+                ? PollJobService.hasBeenScheduled(getActivity())
+                : PollService.isServiceAlarmOn(getActivity());
+        if (isServiceAlarmOn) {
             toggleItem.setTitle(R.string.stop_polling);
         } else {
             toggleItem.setTitle(R.string.start_polling);
@@ -118,8 +122,17 @@ public class PhotoGalleryFragment extends Fragment {
                 updateItems(null);
                 return true;
             case R.id.menu_item_toggle_polling:
-                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
-                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    PollJobService.schedule(
+                            getActivity(),
+                            !PollJobService.hasBeenScheduled(getActivity())
+                    );
+                } else {
+                    PollService.setServiceAlarm(
+                            getActivity(),
+                            !PollService.isServiceAlarmOn(getActivity())
+                    );
+                }
                 getActivity().invalidateOptionsMenu();
                 return true;
             default:
@@ -139,15 +152,15 @@ public class PhotoGalleryFragment extends Fragment {
             @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
         mPhotoRecyclerView = view.findViewById(R.id.photo_recycler_view);
+        mLayoutManager = new GridLayoutManager(getActivity(), 1);
+        mPhotoRecyclerView.setLayoutManager(mLayoutManager);
         mPhotoRecyclerView.getViewTreeObserver().addOnGlobalLayoutListener(
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
                         int width = mPhotoRecyclerView.getWidth();
                         int spanCount = width < COLUMN_WIDTH ? 1 : width / COLUMN_WIDTH;
-                        mLayoutManager = new GridLayoutManager(getActivity(), spanCount);
-                        mPhotoRecyclerView
-                                .setLayoutManager(mLayoutManager);
+                        mLayoutManager.setSpanCount(spanCount);
                         mPhotoRecyclerView
                                 .getViewTreeObserver().removeOnGlobalLayoutListener(this);
             }

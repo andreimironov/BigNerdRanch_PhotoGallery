@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <application
         android:name=".PhotoGalleryApplication"
         android:allowBackup="true"
@@ -15,11 +16,15 @@
         <activity android:name="com.andreimironov.andrei.photogallery.PhotoGalleryActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <service android:name=".PollService"></service>
+        <service android:name=".PollService"/>
+        <service
+            android:name=".PollJobService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="true"
+            />
     </application>
 
 </manifest>
