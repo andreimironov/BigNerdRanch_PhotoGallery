@@ -42,9 +42,7 @@ public class PollJobService extends JobService {
     @Override
     public boolean onStopJob(JobParameters params) {
         Log.d(TAG, "onStopJob");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            schedule(getApplicationContext(), true);
-        }
+
         return false;
     }
 
@@ -152,6 +150,9 @@ public class PollJobService extends JobService {
         @Override
         protected void onPostExecute(JobParameters jobParameters) {
             mPollJobService.jobFinished(jobParameters, false);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                schedule(mPollJobService.getApplicationContext(), true);
+            }
         }
 
     }
