@@ -26,6 +26,8 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".PhotoPageActivity"/>
+
         <service android:name=".PollService"/>
         <service
             android:name=".PollJobService"
