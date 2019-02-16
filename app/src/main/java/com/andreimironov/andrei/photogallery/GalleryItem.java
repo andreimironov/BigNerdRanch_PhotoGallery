@@ -1,14 +1,17 @@
 package com.andreimironov.andrei.photogallery;
 
+import android.net.Uri;
+
 import com.google.gson.annotations.SerializedName;
 
 public class GalleryItem {
     @SerializedName("id") private String mId;
     @SerializedName("title") private String mCaption;
     @SerializedName("url_s") private String mUrl;
+    @SerializedName("owner") private String mOwner;
 
-    public String getCaption() {
-        return mCaption;
+    public void setOwner(String owner) {
+        mOwner = owner;
     }
 
     public void setCaption(String caption) {
@@ -29,6 +32,15 @@ public class GalleryItem {
 
     public void setUrl(String url) {
         mUrl = url;
+    }
+
+    public Uri getPhotoPageUri() {
+        return Uri
+                .parse("https://www.flickr.com/photos/")
+                .buildUpon()
+                .appendPath(mOwner)
+                .appendPath(mId)
+                .build();
     }
 
     @Override

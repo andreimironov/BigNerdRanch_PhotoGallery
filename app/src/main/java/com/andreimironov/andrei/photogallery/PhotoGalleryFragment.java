@@ -1,6 +1,7 @@
 package com.andreimironov.andrei.photogallery;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -225,12 +226,14 @@ public class PhotoGalleryFragment extends VisibleFragment {
         }
     }
 
-    private class PhotoHolder extends RecyclerView.ViewHolder {
+    private class PhotoHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView mItemImageView;
+        private GalleryItem mGalleryItem;
 
         public PhotoHolder(View itemView) {
             super(itemView);
             mItemImageView = itemView.findViewById(R.id.image_view);
+            itemView.setOnClickListener(this);
         }
 
         public void bindGalleryItem(GalleryItem item) {
@@ -238,12 +241,14 @@ public class PhotoGalleryFragment extends VisibleFragment {
         }
 
         private void bindWithoutPicasso(GalleryItem item) {
+            mGalleryItem = item;
             Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
             bindDrawable(placeholder);
             mThumbnailDownloader.queueThumbnail(this, item.getUrl());
         }
 
         private void bindWithPicasso(GalleryItem item) {
+            mGalleryItem = item;
             Picasso
                     .get()
                     .load(item.getUrl())
@@ -253,6 +258,12 @@ public class PhotoGalleryFragment extends VisibleFragment {
 
         public void bindDrawable(Drawable drawable) {
             mItemImageView.setImageDrawable(drawable);
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, mGalleryItem.getPhotoPageUri());
+            startActivity(intent);
         }
     }
 
