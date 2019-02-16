@@ -1,15 +1,12 @@
 package com.andreimironov.andrei.photogallery;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -105,10 +102,7 @@ public class PhotoGalleryFragment extends Fragment {
             }
         });
         MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
-        boolean isServiceAlarmOn = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                ? PollJobService.hasBeenScheduled(getActivity())
-                : PollService.isServiceAlarmOn(getActivity());
-        if (isServiceAlarmOn) {
+        if (PollAdapter.isServiceAlarmOn(getActivity())) {
             toggleItem.setTitle(R.string.stop_polling);
         } else {
             toggleItem.setTitle(R.string.start_polling);
@@ -122,17 +116,10 @@ public class PhotoGalleryFragment extends Fragment {
                 updateItems(null);
                 return true;
             case R.id.menu_item_toggle_polling:
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    PollJobService.schedule(
-                            getActivity(),
-                            !PollJobService.hasBeenScheduled(getActivity())
-                    );
-                } else {
-                    PollService.setServiceAlarm(
-                            getActivity(),
-                            !PollService.isServiceAlarmOn(getActivity())
-                    );
-                }
+                PollAdapter.setServiceAlarm(
+                        getActivity(),
+                        !PollAdapter.isServiceAlarmOn(getActivity())
+                );
                 getActivity().invalidateOptionsMenu();
                 return true;
             default:
