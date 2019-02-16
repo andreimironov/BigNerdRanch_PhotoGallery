@@ -1,11 +1,16 @@
 package com.andreimironov.andrei.photogallery;
 
+import android.annotation.TargetApi;
+import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
@@ -14,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class PhotoPageFragment extends VisibleFragment {
     private static final String ARG_URI = "photo_page_url";
+    private static final String TAG = "PhotoPageFragment";
     private Uri mUri;
     private WebView mWebView;
     private ProgressBar mProgressBar;
@@ -69,9 +75,40 @@ public class PhotoPageFragment extends VisibleFragment {
                 activity.getSupportActionBar().setTitle(title);
             }
         });
-        mWebView.setWebViewClient(new WebViewClient());
+        mWebView.setWebViewClient(new WebViewClient() {
+            @SuppressWarnings("deprecation")
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                if (url.startsWith("http")) {
+                    return false;
+                } else {
+                    startUri(Uri.parse(url));
+                    return true;
+                }
+            }
+
+            @TargetApi(Build.VERSION_CODES.N)
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                switch (request.getUrl().getScheme()) {
+                    case "http":
+                        break;
+                    case "https":
+                        break;
+                    default:
+                        startUri(request.getUrl());
+                        return true;
+                }
+                return false;
+            }
+        });
         mWebView.loadUrl(mUri.toString());
 
         return v;
+    }
+
+    private void startUri(Uri uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        startActivity(Intent.createChooser(intent, "Please choose an app to open"));
     }
 }
