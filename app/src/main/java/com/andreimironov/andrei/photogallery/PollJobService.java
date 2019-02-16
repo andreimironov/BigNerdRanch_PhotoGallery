@@ -65,7 +65,7 @@ public class PollJobService extends JobService {
         JobInfo.Builder jobInfoBuilder =
                 new JobInfo.Builder(JOB_ID, new ComponentName(context, PollJobService.class))
                         .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                        .setPersisted(true);
+                        .setPersisted(false);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             jobInfoBuilder.setMinimumLatency(POLL_INTERVAL_MS);
