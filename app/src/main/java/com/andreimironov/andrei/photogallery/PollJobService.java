@@ -15,6 +15,7 @@ import android.content.res.Resources;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.PersistableBundle;
 import android.util.Log;
 
 import java.util.List;
@@ -29,8 +30,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 public class PollJobService extends JobService {
     private static final int JOB_ID = 1;
-    private static final long POLL_INTERVAL_MS = MINUTES.toMillis(1);
     private static final String TAG = "PollJobService";
+    private static final String KEY_PERIOD = "key period";
 
     @Override
     public boolean onStartJob(final JobParameters params) {
@@ -42,7 +43,6 @@ public class PollJobService extends JobService {
     @Override
     public boolean onStopJob(JobParameters params) {
         Log.d(TAG, "onStopJob");
-
         return false;
     }
 
@@ -58,19 +58,21 @@ public class PollJobService extends JobService {
         return false;
     }
 
-    public static void schedule(Context context, boolean isOn) {
+    public static void schedule(Context context, boolean isOn, long period) {
         Log.d(TAG, "schedule(" + isOn + ")");
         JobScheduler jobScheduler = (JobScheduler)
                 context.getSystemService(Context.JOB_SCHEDULER_SERVICE);
+        PersistableBundle extras = new PersistableBundle();
+        extras.putLong(KEY_PERIOD, period);
         JobInfo.Builder jobInfoBuilder =
                 new JobInfo.Builder(JOB_ID, new ComponentName(context, PollJobService.class))
                         .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                        .setPersisted(false);
-
+                        .setPersisted(false)
+                        .setExtras(extras);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            jobInfoBuilder.setMinimumLatency(POLL_INTERVAL_MS);
+            jobInfoBuilder.setMinimumLatency(period);
         } else {
-            jobInfoBuilder.setPeriodic(POLL_INTERVAL_MS);
+            jobInfoBuilder.setPeriodic(period);
         }
 
         if (isOn) {
@@ -151,7 +153,8 @@ public class PollJobService extends JobService {
         protected void onPostExecute(JobParameters jobParameters) {
             mPollJobService.jobFinished(jobParameters, false);
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                schedule(mPollJobService.getApplicationContext(), true);
+                long period = jobParameters.getExtras().getLong(KEY_PERIOD);
+                schedule(mPollJobService.getApplicationContext(), true, period);
             }
         }
 

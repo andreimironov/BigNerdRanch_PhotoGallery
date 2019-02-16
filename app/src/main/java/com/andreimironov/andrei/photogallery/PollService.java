@@ -25,9 +25,8 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 
 public class PollService extends IntentService {
     private static final String TAG = "PollService";
-    private static final long POLL_INTERVAL_MS = MINUTES.toMillis(1);
 
-    public static void setServiceAlarm(Context context, boolean isOn) {
+    public static void setServiceAlarm(Context context, boolean isOn, long period) {
         Log.d(TAG, "setServiceAlarm(" + isOn + ")");
         Intent intent = PollService.newIntent(context);
         PendingIntent pendingIntent =
@@ -37,7 +36,7 @@ public class PollService extends IntentService {
             alarmManager.setRepeating(
                     AlarmManager.ELAPSED_REALTIME,
                     SystemClock.elapsedRealtime(),
-                    POLL_INTERVAL_MS,
+                    period,
                     pendingIntent);
         } else {
             alarmManager.cancel(pendingIntent);
