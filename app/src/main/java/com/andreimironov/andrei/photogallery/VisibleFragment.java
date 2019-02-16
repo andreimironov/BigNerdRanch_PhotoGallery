@@ -15,7 +15,12 @@ public abstract class VisibleFragment extends Fragment {
     public void onStart() {
         super.onStart();
         IntentFilter filter = new IntentFilter(PollAdapter.ACTION_SHOW_NOTIFICATION);
-        getActivity().registerReceiver(mOnShowNotification, filter);
+        getActivity().registerReceiver(
+                mOnShowNotification,
+                filter,
+                PollAdapter.PERM_PRIVATE,
+                null
+        );
     }
 
     @Override

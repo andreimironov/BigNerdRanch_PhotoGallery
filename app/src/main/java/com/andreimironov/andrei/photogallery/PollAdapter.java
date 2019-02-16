@@ -23,6 +23,7 @@ public class PollAdapter {
     private static final String TAG = "PollAdapter";
     public static final String ACTION_SHOW_NOTIFICATION =
             "com.andreimironov.andrei.photogallery.SHOW_NOTIFICATION";
+    public static final String PERM_PRIVATE = "com.andreimironov.andrei.photogallery.PRIVATE";
 
     public static void setServiceAlarm(Context context, boolean isOn) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -97,7 +98,7 @@ public class PollAdapter {
             }
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(context);
             notificationManagerCompat.notify(0, notification);
-            context.sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION));
+            context.sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION), PERM_PRIVATE);
         }
         QueryPreferences.setLastResultId(context, resultId);
     }
