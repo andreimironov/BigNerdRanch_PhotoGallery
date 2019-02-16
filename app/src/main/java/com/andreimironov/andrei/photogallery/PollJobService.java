@@ -91,61 +91,7 @@ public class PollJobService extends JobService {
 
         @Override
         protected JobParameters doInBackground(JobParameters... jobParameters) {
-            if (!mPollJobService.isNetworkAvailableAndConnected()) {
-                return null;
-            }
-            String query = QueryPreferences.getStoredQuery(mPollJobService.getApplicationContext());
-            String lastResultId = QueryPreferences.getLastResultId(mPollJobService.getApplicationContext());
-            List<GalleryItem> items;
-            if (query == null) {
-                items = new FlickrFetchr().fetchRecentPhotos(1);
-            } else {
-                items = new FlickrFetchr().searchPhotos(query, 1);
-            }
-
-            if (items.size() == 0) {
-                return null;
-            }
-
-            String resultId = items.get(0).getId();
-            if (resultId.equals(lastResultId)) {
-                Log.d(TAG, "Got an old result: " + resultId);
-            } else {
-                Log.d(TAG, "Got a new result: " + resultId);
-                Resources resources = mPollJobService.getResources();
-                Intent i = PhotoGalleryActivity.newIntent(mPollJobService.getApplicationContext());
-                PendingIntent pendingIntent = PendingIntent.getActivity(
-                        mPollJobService.getApplicationContext(),
-                        0,
-                        i,
-                        0);
-                String channelId = "channel id";
-
-                Notification notification =
-                        new NotificationCompat.Builder(mPollJobService.getApplicationContext(), channelId)
-                                .setTicker(resources.getString(R.string.new_pictures_title))
-                                .setSmallIcon(android.R.drawable.ic_menu_report_image)
-                                .setContentTitle(resources.getString(R.string.new_pictures_title))
-                                .setContentText(resources.getString(R.string.new_pictures_text))
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                                .setContentIntent(pendingIntent)
-                                .setAutoCancel(true)
-                                .build();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    CharSequence name = "channel name";
-                    String description = "description";
-                    int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                    NotificationChannel channel = new NotificationChannel(channelId, name, importance);
-                    channel.setDescription(description);
-                    NotificationManager notificationManager =
-                            mPollJobService.getSystemService(NotificationManager.class);
-                    notificationManager.createNotificationChannel(channel);
-                }
-                NotificationManagerCompat notificationManagerCompat =
-                        NotificationManagerCompat.from(mPollJobService.getApplicationContext());
-                notificationManagerCompat.notify(0, notification);
-            }
-            QueryPreferences.setLastResultId(mPollJobService.getApplicationContext(), resultId);
+            PollAdapter.doJob(mPollJobService);
             return jobParameters[0];
         }
 
@@ -157,13 +103,5 @@ public class PollJobService extends JobService {
                 schedule(mPollJobService.getApplicationContext(), true, period);
             }
         }
-
-    }
-
-    private boolean isNetworkAvailableAndConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
-        boolean isNetworkConnected = isNetworkAvailable && cm.getActiveNetworkInfo().isConnected();
-        return isNetworkConnected;
     }
 }

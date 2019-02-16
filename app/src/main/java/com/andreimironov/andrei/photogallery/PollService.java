@@ -62,67 +62,6 @@ public class PollService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        handleIntent(intent);
-    }
-
-    private void handleIntent(Intent intent) {
-        if (!isNetworkAvailableAndConnected()) {
-            return;
-        }
-        Log.d(TAG, "Received an intent: " + intent);
-        String query = QueryPreferences.getStoredQuery(this);
-        String lastResultId = QueryPreferences.getLastResultId(this);
-        List<GalleryItem> items;
-        if (query == null) {
-            items = new FlickrFetchr().fetchRecentPhotos(1);
-        } else {
-            items = new FlickrFetchr().searchPhotos(query, 1);
-        }
-
-        if (items.size() == 0) {
-            return;
-        }
-
-        String resultId = items.get(0).getId();
-        if (resultId.equals(lastResultId)) {
-            Log.d(TAG, "Got an old result: " + resultId);
-        } else {
-            Log.d(TAG, "Got a new result: " + resultId);
-            Resources resources = getResources();
-            Intent i = PhotoGalleryActivity.newIntent(this);
-            PendingIntent pendingIntent =
-                    PendingIntent.getActivity(this, 0, i, 0);
-            String channelId = "channel id";
-
-            Notification notification =
-                    new NotificationCompat.Builder(this, channelId)
-                            .setTicker(resources.getString(R.string.new_pictures_title))
-                            .setSmallIcon(android.R.drawable.ic_menu_report_image)
-                            .setContentTitle(resources.getString(R.string.new_pictures_title))
-                            .setContentText(resources.getString(R.string.new_pictures_text))
-                            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                            .setContentIntent(pendingIntent)
-                            .setAutoCancel(true)
-                            .build();
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                CharSequence name = "channel name";
-                String description = "description";
-                int importance = NotificationManager.IMPORTANCE_DEFAULT;
-                NotificationChannel channel = new NotificationChannel(channelId, name, importance);
-                channel.setDescription(description);
-                NotificationManager notificationManager = getSystemService(NotificationManager.class);
-                notificationManager.createNotificationChannel(channel);
-            }
-            NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(this);
-            notificationManagerCompat.notify(0, notification);
-        }
-        QueryPreferences.setLastResultId(this, resultId);
-    }
-
-    private boolean isNetworkAvailableAndConnected() {
-        ConnectivityManager cm = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
-        boolean isNetworkAvailable = cm.getActiveNetworkInfo() != null;
-        boolean isNetworkConnected = isNetworkAvailable && cm.getActiveNetworkInfo().isConnected();
-        return isNetworkConnected;
+        PollAdapter.doJob(this);
     }
 }
