@@ -21,7 +21,7 @@ import static java.util.concurrent.TimeUnit.MINUTES;
 public class PollAdapter {
     private static final long POLL_INTERVAL_MS = MINUTES.toMillis(1);
     private static final String TAG = "PollAdapter";
-    private static final String ACTION_SHOW_NOTIFICATION =
+    public static final String ACTION_SHOW_NOTIFICATION =
             "com.andreimironov.andrei.photogallery.SHOW_NOTIFICATION";
 
     public static void setServiceAlarm(Context context, boolean isOn) {
