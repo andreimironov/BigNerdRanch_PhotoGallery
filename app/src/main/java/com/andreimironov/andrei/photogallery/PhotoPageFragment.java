@@ -18,6 +18,14 @@ public class PhotoPageFragment extends VisibleFragment {
     private WebView mWebView;
     private ProgressBar mProgressBar;
 
+    public boolean canGoBack() {
+        return mWebView.canGoBack();
+    }
+
+    public void goBack() {
+        mWebView.goBack();
+    }
+
     public static PhotoPageFragment newInstance(Uri uri) {
         Bundle args = new Bundle();
         args.putParcelable(ARG_URI, uri);
